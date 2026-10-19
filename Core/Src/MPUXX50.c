@@ -6,6 +6,18 @@
  */
 
 #include "MPUXX50.h"
+#include <math.h>
+
+/* Library state */
+MPU_RawData_t rawData = {0};
+MPU_SensorData_t sensorData = {0};
+MPU_GyroCal_t gyroCal = {0};
+MPU_Attitude_t attitude = {0};
+float aScaleFactor = 8192.0f;
+float gScaleFactor = 65.5f;
+static uint8_t _addr;
+static float _tau;
+static float _dt;
 
 /// @brief Set the IMU address, check for connection, reset IMU, and set full range scale.
 /// @param I2Cx Pointer to I2C structure config.
@@ -22,14 +34,19 @@ uint8_t MPU_begin(I2C_HandleTypeDef *I2Cx, uint8_t addr, uint8_t aScale, uint8_t
     _dt = dt;
 
     // Initialize variables
-    uint8_t check;
+    uint8_t check = 0;
     uint8_t select;
 
-    // Confirm device
-    HAL_I2C_Mem_Read(I2Cx, _addr, WHO_AM_I, 1, &check, 1, I2C_TIMOUT_MS);
+    // Confirm device; never inspect an uninitialized value on I2C failure.
+    if (HAL_I2C_Mem_Read(I2Cx, _addr, WHO_AM_I,
+                         I2C_MEMADD_SIZE_8BIT, &check, 1,
+                         I2C_TIMOUT_MS) != HAL_OK)
+    {
+        return 0;
+    }
 
     // TODO: If 9250 or 6050 fails could it trigger the opposite check???
-    if ((check == WHO_AM_I_9250_ANS) || (check == WHO_AM_I_6050_ANS))
+    if ((check == WHO_AM_I_9250_ANS) || (check == WHO_AM_I_6500_ANS) || (check == WHO_AM_I_6050_ANS))
     {
         // Startup / reset the sensor
         select = 0x00;
@@ -130,19 +147,24 @@ void MPU_writeGyroFullScaleRange(I2C_HandleTypeDef *I2Cx, uint8_t gScale)
 void MPU_readRawData(I2C_HandleTypeDef *I2Cx)
 {
     // Init buffer
-    uint8_t buf[14];
+    uint8_t buf[14] = {0};
 
-    // Subroutine for reading the raw data
-    HAL_I2C_Mem_Read(I2Cx, _addr, ACCEL_XOUT_H, 1, buf, 14, I2C_TIMOUT_MS);
+    // Read the accelerometer, temperature, and gyroscope registers.
+    if (HAL_I2C_Mem_Read(I2Cx, _addr, ACCEL_XOUT_H,
+                         I2C_MEMADD_SIZE_8BIT, buf, 14,
+                         I2C_TIMOUT_MS) != HAL_OK)
+    {
+        return;
+    }
 
     // Bit shift the data
-    rawData.ax = buf[0] << 8 | buf[1];
-    rawData.ay = buf[2] << 8 | buf[3];
-    rawData.az = buf[4] << 8 | buf[5];
+    rawData.ax = (int16_t)((uint16_t)buf[0] << 8 | buf[1]);
+    rawData.ay = (int16_t)((uint16_t)buf[2] << 8 | buf[3]);
+    rawData.az = (int16_t)((uint16_t)buf[4] << 8 | buf[5]);
     // temperature = buf[6] << 8 | buf[7];
-    rawData.gx = buf[8] << 8 | buf[9];
-    rawData.gy = buf[10] << 8 | buf[11];
-    rawData.gz = buf[12] << 8 | buf[13];
+    rawData.gx = (int16_t)((uint16_t)buf[8] << 8 | buf[9]);
+    rawData.gy = (int16_t)((uint16_t)buf[10] << 8 | buf[11]);
+    rawData.gz = (int16_t)((uint16_t)buf[12] << 8 | buf[13]);
 }
 
 /// @brief Find offsets for each axis of gyroscope.

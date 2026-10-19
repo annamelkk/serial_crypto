@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/anna/Documents/serial_crypto/build/cmake_install.cmake",
+		"/home/anna/Documents/serial_crypto/build/cmake/stm32cubemx/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -2,138 +2,123 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
+  * @brief          : MPU9250 I2C diagnostic and attitude demo.
   ******************************************************************************
   */
 /* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
+
 #include "main.h"
 #include "i2c.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-#include "string.h"
-#include "stdio.h"
 #include "MPUXX50.h"
-/* USER CODE END Includes */
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-#define TRUE  1
-#define FALSE 0
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
+#include <stdio.h>
+#include <string.h>
 
 /* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-uint8_t serialBuf[100];
-/* USER CODE END PV */
+static uint8_t serialBuf[100];
+static char msg[100];
+static uint8_t who_am_i = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
 int main(void)
 {
+    HAL_StatusTypeDef status;
 
-  /* USER CODE BEGIN 1 */
+    HAL_Init();
+    SystemClock_Config();
 
-  /* USER CODE END 1 */
+    MX_GPIO_Init();
+    MX_I2C1_Init();
+    MX_USART2_UART_Init();
+    MX_TIM2_Init();
 
-  /* MCU Configuration--------------------------------------------------------*/
+    HAL_Delay(100);
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    /* STEP 1: Verify the MPU9250 responds at 7-bit address 0x68. */
+    status = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(0x68U << 1), 3, 100);
 
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
-  SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_I2C1_Init();
-  MX_USART2_UART_Init();
-  MX_TIM2_Init();
-  /* USER CODE BEGIN 2 */
-
-  // Check if IMU configured properly and block if it didn't
-  if (MPU_begin(&hi2c1, AD0_LOW, AFSR_4G, GFSR_500DPS, 0.98, 0.004) == TRUE)
-  {
-    HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
-  }
-  else
-  {
-    sprintf((char *)serialBuf, "ERROR!\r\n");
-    HAL_UART_Transmit(&huart2, serialBuf, strlen((char *)serialBuf), HAL_MAX_DELAY);
-    while (1)
-    {
-      HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
-      HAL_Delay(500);
+    if (status == HAL_OK) {
+        snprintf(msg, sizeof(msg), "I2C device detected at 0x68\r\n");
+    } else {
+        snprintf(msg, sizeof(msg),
+                 "No device at 0x68; HAL status=%d\r\n", (int)status);
     }
-  }
+    HAL_UART_Transmit(&huart2, (uint8_t *)msg,
+                      (uint16_t)strlen(msg), HAL_MAX_DELAY);
 
-  // Calibrate the IMU
-  sprintf((char *)serialBuf, "CALIBRATING...\r\n");
-  HAL_UART_Transmit(&huart2, serialBuf, strlen((char *)serialBuf), HAL_MAX_DELAY);
-  MPU_calibrateGyro(&hi2c1, 1500);
+    /* STEP 2: Read WHO_AM_I (MPU9250 normally returns 0x71). */
+    status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(0x68U << 1),
+                              0x75, I2C_MEMADD_SIZE_8BIT,
+                              &who_am_i, 1, 100);
 
-  // Start timer and put processor into an efficient low power mode
-  HAL_TIM_Base_Start_IT(&htim2);
-  HAL_PWR_EnableSleepOnExit();
-  HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-  /* USER CODE END 2 */
+    if (status == HAL_OK) {
+        snprintf(msg, sizeof(msg), "WHO_AM_I = 0x%02X\r\n", who_am_i);
+    } else {
+        snprintf(msg, sizeof(msg),
+                 "WHO_AM_I read failed; HAL status=%d\r\n", (int)status);
+    }
+    HAL_UART_Transmit(&huart2, (uint8_t *)msg,
+                      (uint16_t)strlen(msg), HAL_MAX_DELAY);
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
+    /* If address 0x68 failed, stop here so the diagnostic remains clear. */
+    if (status != HAL_OK || (who_am_i != WHO_AM_I_9250_ANS &&
+                             who_am_i != WHO_AM_I_6050_ANS)) {
+        snprintf(msg, sizeof(msg),
+                 "Check wiring, power, AD0, and sensor identity.\r\n");
+        HAL_UART_Transmit(&huart2, (uint8_t *)msg,
+                          (uint16_t)strlen(msg), HAL_MAX_DELAY);
+        while (1) {
+            HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+            HAL_Delay(500);
+        }
+    }
 
-    /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+    /* STEP 3: Initialize the IMU. AD0_LOW means address 0x68. */
+    if (MPU_begin(&hi2c1, AD0_LOW, AFSR_4G, GFSR_500DPS,
+                  0.98f, 0.004f) != 1U) {
+        snprintf(msg, sizeof(msg), "ERROR: MPU initialization failed.\r\n");
+        HAL_UART_Transmit(&huart2, (uint8_t *)msg,
+                          (uint16_t)strlen(msg), HAL_MAX_DELAY);
+        while (1) {
+            HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+            HAL_Delay(250);
+        }
+    }
+
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+    snprintf(msg, sizeof(msg), "MPU initialization successful.\r\n");
+    HAL_UART_Transmit(&huart2, (uint8_t *)msg,
+                      (uint16_t)strlen(msg), HAL_MAX_DELAY);
+
+    /* STEP 4: Keep the sensor stationary during gyro calibration. */
+    snprintf(msg, sizeof(msg), "CALIBRATING; keep sensor still...\r\n");
+    HAL_UART_Transmit(&huart2, (uint8_t *)msg,
+                      (uint16_t)strlen(msg), HAL_MAX_DELAY);
+
+    MPU_calibrateGyro(&hi2c1, 500);
+
+    snprintf(msg, sizeof(msg), "Calibration complete.\r\n");
+    HAL_UART_Transmit(&huart2, (uint8_t *)msg,
+                      (uint16_t)strlen(msg), HAL_MAX_DELAY);
+
+    /* STEP 5: Start TIM2. Current prescaler/period target is 250 Hz. */
+    if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK) {
+        snprintf(msg, sizeof(msg), "ERROR: TIM2 failed to start.\r\n");
+        HAL_UART_Transmit(&huart2, (uint8_t *)msg,
+                          (uint16_t)strlen(msg), HAL_MAX_DELAY);
+        while (1) {
+        }
+    }
+
+    /* Sleep between interrupts; the timer callback emits attitude values. */
+    while (1) {
+        HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+    }
 }
 
 /**
@@ -142,84 +127,62 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+    RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+        Error_Handler();
+    }
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK |
+                                  RCC_CLOCKTYPE_SYSCLK |
+                                  RCC_CLOCKTYPE_PCLK1 |
+                                  RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
+        Error_Handler();
+    }
 }
 
-/* USER CODE BEGIN 4 */
-// Callback: timer has rolled over
+/* Timer callback: calculate and print roll, pitch, yaw. */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  // Check if timer has triggered and update attitude
-  if (htim == &htim2)
-  {
-    HAL_ResumeTick();
+    if (htim->Instance == TIM2) {
+        MPU_calcAttitude(&hi2c1);
 
-    MPU_calcAttitude(&hi2c1);
-    sprintf((char *)serialBuf, "%.1f,%.1f,%.1f\r\n", attitude.r, attitude.p, attitude.y);
-    HAL_UART_Transmit(&huart2, serialBuf, strlen((char *)serialBuf), HAL_MAX_DELAY);
+        int n = snprintf((char *)serialBuf, sizeof(serialBuf),
+                         "%.1f,%.1f,%.1f\r\n",
+                         attitude.r, attitude.p, attitude.y);
 
-    HAL_SuspendTick();
-  }
+        if (n > 0) {
+            HAL_UART_Transmit(&huart2, serialBuf, (uint16_t)n, 10);
+        }
+    }
 }
-/* USER CODE END 4 */
 
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
-  /* USER CODE END Error_Handler_Debug */
+    __disable_irq();
+    while (1) {
+    }
 }
+
 #ifdef USE_FULL_ASSERT
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    (void)file;
+    (void)line;
 }
-#endif /* USE_FULL_ASSERT */
+#endif

@@ -1,0 +1,36 @@
+cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir/__/__/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c.obj: \
+ /home/anna/Documents/serial_crypto/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Core/Inc/stm32f1xx_hal_conf.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/CMSIS/Include/core_cm3.h \
+ /usr/lib/gcc/arm-none-eabi/16.2.0/include/stdint.h \
+ /usr/arm-none-eabi/include/stdint.h \
+ /usr/arm-none-eabi/include/machine/_default_types.h \
+ /usr/arm-none-eabi/include/sys/features.h \
+ /usr/arm-none-eabi/include/_newlib_version.h \
+ /usr/arm-none-eabi/include/sys/_intsup.h \
+ /usr/arm-none-eabi/include/sys/_stdint.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/CMSIS/Include/cmsis_version.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/CMSIS/Include/cmsis_compiler.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/CMSIS/Include/cmsis_gcc.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
+ /usr/lib/gcc/arm-none-eabi/16.2.0/include/stddef.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
+ /home/anna/Documents/serial_crypto/cmake/stm32cubemx/../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h

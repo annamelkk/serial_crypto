@@ -1,0 +1,7 @@
+/home/anna/Documents/serial_crypto/Core/Src/MPUXX50.c:29:9:MPU_begin	40	static
+/home/anna/Documents/serial_crypto/Core/Src/MPUXX50.c:70:6:MPU_writeAccFullScaleRange	40	static
+/home/anna/Documents/serial_crypto/Core/Src/MPUXX50.c:109:6:MPU_writeGyroFullScaleRange	40	static
+/home/anna/Documents/serial_crypto/Core/Src/MPUXX50.c:147:6:MPU_readRawData	48	static
+/home/anna/Documents/serial_crypto/Core/Src/MPUXX50.c:173:6:MPU_calibrateGyro	40	static
+/home/anna/Documents/serial_crypto/Core/Src/MPUXX50.c:204:6:MPU_readProcessedData	16	static
+/home/anna/Documents/serial_crypto/Core/Src/MPUXX50.c:227:6:MPU_calcAttitude	32	static

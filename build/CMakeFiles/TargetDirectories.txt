@@ -1,0 +1,6 @@
+/home/anna/Documents/serial_crypto/build/CMakeFiles/IMU_crypto.dir
+/home/anna/Documents/serial_crypto/build/CMakeFiles/edit_cache.dir
+/home/anna/Documents/serial_crypto/build/CMakeFiles/rebuild_cache.dir
+/home/anna/Documents/serial_crypto/build/cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir
+/home/anna/Documents/serial_crypto/build/cmake/stm32cubemx/CMakeFiles/edit_cache.dir
+/home/anna/Documents/serial_crypto/build/cmake/stm32cubemx/CMakeFiles/rebuild_cache.dir
